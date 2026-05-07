@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <title>Betamax</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-black: #000000; --bg-dark: #0f0f0f; --bg-card: #1a1a1a; --bg-card2: #222222;
+      --red: #e2001a; --red-dark: #b00015; --green: #00c853; --yellow: #ffd600;
+      --white: #ffffff; --grey: #8a8a8a; --grey-light: #c0c0c0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg-black); color: var(--white); font-family: 'Barlow', sans-serif; }
+    #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 430px; margin: 0 auto; position: relative; overflow: hidden; }
+
+    /* ── HEADER ── */
+    #header { background: var(--bg-black); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1f1f1f; flex-shrink: 0; z-index: 50; }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: -1px; color: var(--white); }
+    .logo span { color: var(--red); }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .balance-btn { background: #1a1a1a; border: 1px solid #333; border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 600; color: var(--white); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .add-btn { background: var(--red); border: none; border-radius: 50%; width: 28px; height: 28px; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+    .save-btn { background: #1a2a1a; border: 1px solid #00c853; border-radius: 20px; padding: 5px 10px; font-size: 11px; font-weight: 700; color: #00c853; cursor: pointer; white-space: nowrap; }
+    .solidarity-badge { background: linear-gradient(135deg, #00c853, #00897b); border-radius: 12px; padding: 3px 8px; font-size: 10px; font-weight: 700; color: white; letter-spacing: 0.5px; }
+
+    /* ── CONTENT ── */
+    #content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+    #content::-webkit-scrollbar { display: none; }
+
+    /* ── SCREENS ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── SEARCH BAR ── */
+    .search-bar { margin: 10px 12px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: var(--grey); font-size: 15px; }
+    .search-bar input { background: none; border: none; outline: none; color: var(--white); font-size: 15px; flex: 1; font-family: 'Barlow', sans-serif; }
+    .search-bar input::placeholder { color: var(--grey); }
+
+    /* ── SPORT / MATCH ── */
+    .section-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--white); padding: 12px 14px 6px; }
+    .match-card { background: var(--bg-card); margin: 6px 12px; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.1s; }
+    .match-card:active { transform: scale(0.98); }
+    .match-header { padding: 8px 12px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #2a2a2a; }
+    .match-league { font-size: 12px; color: var(--grey-light); font-weight: 600; flex: 1; }
+    .live-badge { background: var(--red); color: white; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+    .match-body { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
+    .match-teams { flex: 1; }
+    .team-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    .team-name { font-size: 14px; font-weight: 600; }
+    .match-score { text-align: center; padding: 0 14px; }
+    .score-display { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; color: var(--white); line-height: 1; }
+    .match-time { font-size: 11px; color: var(--red); font-weight: 700; margin-top: 2px; }
+    .odds-row { display: flex; gap: 8px; padding: 0 12px 12px; }
+    .odd-btn { flex: 1; background: #2a2a2a; border: 1.5px solid #333; border-radius: 8px; padding: 8px 6px; text-align: center; cursor: pointer; transition: all 0.15s; }
+    .odd-btn:hover, .odd-btn.active { background: rgba(226,0,26,0.15); border-color: var(--red); }
+    .odd-btn.active { background: rgba(226,0,26,0.25); }
+    .odd-label { font-size: 10px; color: var(--grey); font-weight: 500; margin-bottom: 2px; }
+    .odd-value { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--white); }
+    .odd-btn.active .odd-value { color: var(--red); }
+
+    /* ── LIVE SCREEN ── */
+    .live-filter-wrapper { display: flex; align-items: center; gap: 4px; padding: 10px 4px; }
+    .live-nav-btn { background: #1a1a1a; border: 1px solid #333; border-radius: 50%; min-width: 28px; width: 28px; height: 28px; color: var(--white); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .live-filter-bar { display: flex; gap: 8px; overflow-x: auto; flex: 1; scroll-behavior: smooth; padding: 2px 0; }
+    .live-filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip { background: #1a1a1a; border: 1px solid #333; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
+    .filter-chip.active { background: var(--red); border-color: var(--red); }
+
+    /* ── BETS SCREEN ── */
+    .bet-tabs { display: flex; border-bottom: 1px solid #1f1f1f; }
+    .bet-tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: 600; color: var(--grey); cursor: pointer; border-bottom: 2px solid transparent; }
+    .bet-tab.active { color: var(--white); border-bottom-color: var(--red); }
+    .bet-card { background: var(--bg-card); margin: 8px 12px; border-radius: 12px; overflow: hidden; }
+    .bet-card-header { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2a2a2a; }
+    .bet-status { font-size: 12px; font-weight: 800; }
+    .bet-status.won { color: var(--green); }
+    .bet-status.lost { color: var(--red); }
+    .bet-status.pending { color: var(--yellow); }
+    .bet-type { font-size: 13px; font-weight: 700; color: var(--white); margin-left: 6px; }
+    .bet-detail-row { padding: 8px 14px; display: flex; justify-content: space-between; font-size: 13px; }
+    .bet-detail-label { color: var(--grey); }
+    .bet-detail-value { font-weight: 600; }
+    .combo-booster-tag { background: linear-gradient(135deg, #1a472a, #2e7d32); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 800; color: #69f0ae; display: inline-flex; align-items: center; gap: 4px; }
+
+    /* ── SOLIDARITY ── */
+    .solidarity-bar { background: linear-gradient(135deg, #003d2b, #004d35); margin: 10px 12px; border-radius: 12px; padding: 12px 16px; border: 1px solid #00c853; }
+    .solidarity-title { font-size: 11px; font-weight: 700; color: #69f0ae; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .solidarity-amount { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; color: #00c853; }
+    .solidarity-sub { font-size: 11px; color: #69f0ae; margin-top: 2px; }
+    .solidarity-progress { background: rgba(0,200,83,0.2); border-radius: 4px; height: 6px; margin-top: 8px; }
+    .solidarity-fill { background: var(--green); border-radius: 4px; height: 6px; transition: width 0.5s; }
+
+    /* ── POKER LOBBY ── */
+    .poker-hero { background: linear-gradient(180deg, #1a0a2e, #0d0d1f); padding: 20px 14px 10px; text-align: center; border-bottom: 1px solid #2a1a4e; }
+    .poker-title { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; color: var(--white); }
+    .poker-title span { color: #ffd600; }
+    .poker-subtitle { font-size: 13px; color: #9c88cc; margin-top: 4px; }
+    .poker-table-card { background: linear-gradient(135deg, #1a1a2e, #16213e); margin: 8px 12px; border-radius: 14px; border: 1px solid #2a2a4e; padding: 16px; cursor: pointer; transition: transform 0.15s; }
+    .poker-table-card:active { transform: scale(0.98); }
+    .poker-table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .poker-table-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; color: var(--white); }
+    .poker-players { font-size: 12px; color: #9c88cc; }
+    .poker-info-row { display: flex; gap: 8px; margin-top: 8px; }
+    .poker-info-chip { background: rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600; color: var(--grey-light); }
+    .buy-in-chips { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .buy-in-btn { background: #ffd600; color: #000; font-weight: 800; font-size: 13px; border-radius: 8px; padding: 6px 14px; cursor: pointer; border: none; }
+    .buy-in-btn.free { background: var(--green); color: white; }
+
+    /* ── POKER GAME OVERLAY ── */
+    #poker-game-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 250; align-items: center; justify-content: center; padding: 8px; overflow-y: auto; }
+    .pk-wrap { background: #0a0a14; border-radius: 16px; width: 100%; max-width: 420px; border: 1px solid #2a2a4e; overflow: hidden; display: flex; flex-direction: column; }
+    .pk-header { background: linear-gradient(135deg,#1a0a2e,#0d0d1f); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a4e; }
+    .pk-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; color: var(--white); }
+    .pk-close { background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+
+    /* TABLE FEUTRÉE */
+    .pk-felt { background: radial-gradient(ellipse at center, #1a4a2e 0%, #0d2a1a 100%); padding: 12px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #2a2a4e; }
+    .pk-bots-row { display: flex; gap: 8px; align-items: flex-start; }
+    .pk-player-box { background: rgba(0,0,0,0.4); border-radius: 10px; padding: 8px; flex: 1; border: 1px solid rgba(255,255,255,0.08); position: relative; }
+    .pk-player-box.folded { opacity: 0.45; }
+    .pk-pot-area { flex-shrink: 0; text-align: center; padding: 8px 6px; }
+    .pk-pot-label { font-size: 9px; color: var(--grey); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+    .pk-pot-amount { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; color: var(--yellow); }
+    .pk-bot-label { font-size: 11px; color: var(--grey-light); font-weight: 700; margin-bottom: 5px; }
+    .pk-badge-fold { background: var(--red); color: white; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+    .pk-hand { display: flex; gap: 4px; flex-wrap: wrap; }
+    .pk-chips-display { font-size: 11px; color: var(--yellow); font-weight: 700; margin-top: 4px; text-align: center; }
+    .pk-hand-label { font-size: 12px; color: #69f0ae; font-weight: 700; text-align: center; margin-top: 4px; background: rgba(0,200,83,0.1); border-radius: 6px; padding: 3px 8px; }
+    .pk-player-info { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; margin-top: 5px; }
+
+    /* Cartes communautaires */
+    .pk-community-row { display: flex; gap: 6px; justify-content: center; padding: 4px 0; }
+    .pk-card-empty { width: 40px; height: 56px; border: 2px dashed rgba(255,255,255,0.15); border-radius: 6px; }
+
+    /* Joueur en bas */
+    .pk-player-self { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 10px 12px; border: 2px solid rgba(226,0,26,0.3); }
+    .pk-player-self.folded { opacity: 0.45; border-color: #333; }
+
+    /* ── CARTES POKER ── */
+    .pk-card { background: var(--white); border-radius: 6px; width: 40px; height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; color: #111; box-shadow: 0 2px 6px rgba(0,0,0,0.5); position: relative; flex-shrink: 0; }
+    .pk-card.red { color: var(--red); }
+    .pk-card.hidden { background: linear-gradient(135deg,#1a1a4e,#0d0d2e); color: #444; font-size: 22px; }
+    .pk-rank-top { font-size: 13px; line-height: 1; }
+    .pk-suit-mid { font-size: 16px; line-height: 1; }
+
+    /* Log */
+    .pk-log { background: #050508; padding: 8px 12px; max-height: 80px; overflow-y: auto; border-bottom: 1px solid #1a1a2e; }
+    .pk-log::-webkit-scrollbar { display: none; }
+    .pk-log-entry { font-size: 11px; color: var(--grey-light); padding: 1px 0; }
+
+    /* Boutons action poker */
+    .pk-actions { display: flex; gap: 6px; padding: 10px 12px; flex-wrap: wrap; background: #0a0a14; }
+    .pk-btn { flex: 1; min-width: 70px; padding: 10px 4px; border: none; border-radius: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 900; cursor: pointer; letter-spacing: 0.3px; transition: opacity 0.15s; }
+    .pk-btn:active { opacity: 0.8; }
+    .pk-red    { background: var(--red); color: white; }
+    .pk-blue   { background: #1565c0; color: white; }
+    .pk-yellow { background: #f57f17; color: white; }
+    .pk-orange { background: #e65100; color: white; }
+    .pk-purple { background: #6a1b9a; color: white; }
+    .pk-green  { background: var(--green); color: white; }
+    .pk-grey   { background: #333; color: var(--grey-light); }
+    .pk-info-msg { font-size: 12px; color: var(--grey); text-align: center; width: 100%; padding: 4px; }
+
+    /* ── MENU SCREEN ── */
+    .menu-user { padding: 20px 16px; border-bottom: 1px solid #1f1f1f; }
+    .menu-username { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 900; color: var(--white); }
+    .menu-uid { font-size: 10px; color: var(--grey); margin-top: 2px; font-family: monospace; letter-spacing: 0.5px; }
+    .menu-balance-row { display: flex; gap: 12px; margin-top: 12px; }
+    .menu-balance-box { flex: 1; background: var(--bg-card); border-radius: 10px; padding: 10px; text-align: center; }
+    .menu-balance-label { font-size: 11px; color: var(--grey); text-transform: uppercase; font-weight: 700; }
+    .menu-balance-val { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; color: var(--green); margin-top: 2px; }
+    .menu-action-row { display: flex; gap: 10px; margin-top: 12px; }
+    .menu-action-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: 700; text-align: center; cursor: pointer; border: none; }
+    .menu-action-btn.save    { background: #1a2a1a; color: #00c853; border: 1px solid #00c853; }
+    .menu-action-btn.deposit { background: var(--red); color: var(--white); }
+    .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #111; cursor: pointer; }
+    .menu-item:hover { background: #0f0f0f; }
+    .menu-item-left { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; }
+    .menu-item-icon { font-size: 20px; width: 28px; text-align: center; }
+    .menu-item-arrow { color: var(--grey); font-size: 18px; }
+
+    /* ── BOTTOM NAV ── */
+    #bottom-nav { background: #0a0a0a; border-top: 1px solid #1f1f1f; display: flex; flex-shrink: 0; z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; cursor: pointer; gap: 3px; border: none; background: none; color: var(--grey); transition: color 0.15s; }
+    .nav-item.active { color: var(--red); }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+
+    /* ── BET BASKET ── */
+    #bet-basket { position: fixed; bottom: 65px; left: 50%; transform: translateX(-50%) translateY(calc(100% + 65px)); width: 100%; max-width: 430px; background: #111; border-top: 2px solid var(--red); z-index: 150; transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94); max-height: 75vh; overflow-y: auto; }
+    #bet-basket.open { transform: translateX(-50%) translateY(0); }
+    .basket-header { background: var(--red); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .basket-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; }
+    .basket-close { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+    .basket-item { padding: 10px 14px; border-bottom: 1px solid #222; }
+    .basket-item-match { font-size: 12px; color: var(--grey); margin-bottom: 2px; }
+    .basket-item-bet { font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    .basket-item-odd { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; color: var(--red); }
+    .basket-remove { background: none; border: none; color: var(--grey); font-size: 18px; cursor: pointer; }
+    .basket-footer { padding: 12px 14px; background: #0d0d0d; position: sticky; bottom: 0; }
+    .stake-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .stake-label { font-size: 13px; color: var(--grey); font-weight: 600; }
+    .stake-input { flex: 1; background: #222; border: 1px solid #333; border-radius: 8px; padding: 8px 12px; color: white; font-size: 16px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; text-align: right; }
+    .stake-input:focus { outline: none; border-color: var(--red); }
+    .total-odds-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+    .total-odds-label { color: var(--grey); }
+    .total-odds-value { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; color: var(--white); }
+    .potential-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; }
+    .potential-label { color: var(--grey); }
+    .potential-value { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; color: var(--green); }
+    .place-bet-btn { width: 100%; background: var(--red); border: none; border-radius: 10px; padding: 14px; color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; cursor: pointer; transition: opacity 0.15s; }
+    .place-bet-btn:active { opacity: 0.85; }
+
+    /* ── COMBO BOOSTER ── */
+    #booster-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    #booster-overlay.show { display: flex; }
+    .booster-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 8px; color: var(--white); }
+    .booster-subtitle { font-size: 14px; color: var(--grey-light); text-align: center; margin-bottom: 28px; }
+    .booster-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 320px; }
+    .booster-cell { background: #1a1a1a; border: 2px solid #333; border-radius: 12px; padding: 16px 8px; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 900; transition: all 0.2s; }
+    .booster-cell.lit { background: rgba(0,200,83,0.2); border-color: var(--green); color: var(--green); }
+    .booster-cell.eliminated { opacity: 0.15; transform: scale(0.9); }
+    .booster-cell.winner { background: linear-gradient(135deg,#00c853,#00897b); border-color: var(--green); color: white; box-shadow: 0 0 30px rgba(0,200,83,0.5); }
+    .booster-result { margin-top: 24px; text-align: center; display: none; }
+    .booster-result.show { display: block; }
+    .booster-result-label { font-size: 14px; color: var(--grey-light); margin-bottom: 4px; }
+    .booster-result-val { font-family: 'Barlow Condensed', sans-serif; font-size: 48px; font-weight: 900; color: var(--green); }
+    .booster-result-gains { font-size: 16px; color: var(--white); margin-top: 4px; }
+    .booster-confirm-btn { margin-top: 20px; background: var(--green); border: none; border-radius: 12px; padding: 14px 40px; color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; cursor: pointer; display: none; }
+    .booster-confirm-btn.show { display: inline-block; }
+
+    /* ── AUTH OVERLAY ── */
+    #auth-overlay { position: fixed; inset: 0; background: var(--bg-black); z-index: 300; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 0 24px 40px; }
+    .auth-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 900; margin: 48px 0 4px; }
+    .auth-logo span { color: var(--red); }
+    .auth-tagline { font-size: 13px; color: var(--grey-light); text-align: center; margin-bottom: 28px; max-width: 280px; line-height: 1.5; }
+    .auth-tagline strong { color: var(--green); }
+    .auth-panel { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 340px; }
+    .solidarity-highlight { background: linear-gradient(135deg,#003d2b,#004d35); border: 1px solid #00c853; border-radius: 12px; padding: 14px 16px; margin-bottom: 28px; width: 100%; text-align: center; }
+    .solidarity-highlight h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; color: var(--green); margin-bottom: 4px; }
+    .solidarity-highlight p { font-size: 12px; color: #69f0ae; line-height: 1.4; }
+    .auth-main-btn { width: 100%; border: none; border-radius: 12px; padding: 15px 24px; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; cursor: pointer; margin-bottom: 12px; transition: opacity 0.15s; }
+    .auth-main-btn:active { opacity: 0.85; }
+    .auth-main-btn.primary { background: var(--red); color: white; }
+    .auth-main-btn.secondary { background: #1a1a1a; color: var(--white); border: 1px solid #444; }
+    .auth-form-group { width: 100%; margin-bottom: 12px; }
+    .auth-form-label { font-size: 11px; font-weight: 700; color: var(--grey); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; display: block; }
+    .auth-form-input { width: 100%; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 12px 16px; color: white; font-size: 16px; font-family: 'Barlow', sans-serif; }
+    .auth-form-input:focus { outline: none; border-color: var(--red); }
+    .auth-form-input[type="date"] { color-scheme: dark; }
+    .auth-error { font-size: 13px; color: var(--red); margin-bottom: 12px; text-align: center; min-height: 20px; }
+    .auth-back { background: none; border: none; color: var(--grey); font-size: 14px; cursor: pointer; margin-top: 12px; display: flex; align-items: center; gap: 6px; }
+    .auth-footer { font-size: 11px; color: var(--grey); text-align: center; margin-top: 12px; }
+    .auth-footer a { color: var(--grey); text-decoration: underline; }
+    .passport-info { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; width: 100%; font-size: 12px; color: var(--grey); line-height: 1.6; }
+    .passport-info strong { color: var(--grey-light); }
+    .drop-zone { width: 100%; border: 2px dashed #444; border-radius: 14px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 14px; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--red); background: rgba(226,0,26,0.06); }
+    .drop-zone-icon { font-size: 36px; margin-bottom: 8px; }
+    .drop-zone-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+    .drop-zone-sub { font-size: 12px; color: var(--grey); }
+    .drop-zone-or { font-size: 12px; color: var(--grey); margin: 10px 0; }
+
+    /* ── MODALS ── */
+    #deposit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; }
+    #deposit-modal.show { display: flex; }
+    .deposit-box { background: #1a1a1a; border-radius: 16px; padding: 24px; width: 100%; max-width: 320px; border: 1px solid #333; }
+    .deposit-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 16px; }
+    .deposit-input { width: 100%; background: #222; border: 1px solid #444; border-radius: 10px; padding: 12px 16px; color: white; font-size: 20px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; margin-bottom: 16px; }
+    .deposit-input:focus { outline: none; border-color: var(--red); }
+    .deposit-chips { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .deposit-chip { background: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 6px 14px; font-size: 14px; font-weight: 700; cursor: pointer; color: white; }
+    .deposit-chip:hover { border-color: var(--red); color: var(--red); }
+    .deposit-actions { display: flex; gap: 10px; }
+    .deposit-cancel { flex: 1; background: #222; border: 1px solid #444; border-radius: 10px; padding: 12px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .deposit-confirm { flex: 2; background: var(--red); border: none; border-radius: 10px; padding: 12px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+    #withdraw-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; }
+    #withdraw-modal.show { display: flex; }
+
+    /* ── TOAST ── */
+    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px); background: #222; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    hr.divider { border: none; border-top: 1px solid #1a1a1a; margin: 4px 0; }
+
+    /* ── FLASH COTES ── */
+    @keyframes oddFlashUp { 0%{background:rgba(0,200,83,0.3);color:#69f0ae} 100%{background:transparent;color:inherit} }
+    .odd-flash-up { animation: oddFlashUp 0.4s ease; }
+
+    /* ── ANIMATION RÉSULTAT POKER ── */
+    @keyframes pkResultFadeIn  { from{opacity:0}           to{opacity:1} }
+    @keyframes pkResultFadeOut { from{opacity:1}           to{opacity:0} }
+    @keyframes pkResultPop     { from{transform:scale(0.4);opacity:0} to{transform:scale(1);opacity:1} }
+    @keyframes pkResultSlide   { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    /* ── SPORT CAT BAR (comme Live) ── */
+    .sport-cat-wrapper { display: flex; align-items: center; gap: 4px; padding: 8px 4px 4px; border-bottom: 1px solid #111; }
+    .sport-cat-nav { background: #1a1a1a; border: 1px solid #333; border-radius: 50%; min-width: 28px; width: 28px; height: 28px; color: var(--white); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    #sport-cat-bar { display: flex; gap: 8px; overflow-x: auto; flex: 1; scroll-behavior: smooth; padding: 2px 0; }
+    #sport-cat-bar::-webkit-scrollbar { display: none; }
+    .sport-cat-chip { background: #1a1a1a; border: 1px solid #333; border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; flex-shrink: 0; color: var(--grey-light); }
+    .sport-cat-chip.active { background: var(--red); border-color: var(--red); color: white; }
+
+    /* ── SCREEN TICKETS ── */
+    #screen-tickets { display: none; }
+    #screen-tickets.active { display: block; }
+
+    /* ── POKER BET CONTROL ── */
+    .pk-bet-ctrl { display: flex; align-items: center; gap: 4px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333; padding: 4px 8px; }
+    .pk-bet-adj { background: #333; border: none; color: white; width: 26px; height: 26px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pk-bet-val { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 900; color: var(--yellow); white-space: nowrap; min-width: 60px; text-align: center; }
+    .pk-actions { display: flex; gap: 5px; padding: 10px 10px; flex-wrap: wrap; background: #0a0a14; }
+    .pk-btn { flex: 1; min-width: 60px; padding: 10px 4px; border: none; border-radius: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 900; cursor: pointer; transition: opacity 0.15s; }
+    .pk-btn:active { opacity: 0.8; }
+    .pk-red    { background: var(--red); color: white; }
+    .pk-blue   { background: #1565c0; color: white; }
+    .pk-yellow { background: #f57f17; color: white; }
+    .pk-purple { background: #6a1b9a; color: white; }
+    .pk-green  { background: var(--green); color: white; }
+    .pk-grey   { background: #333; color: var(--grey-light); }
+    .pk-info-msg { font-size: 12px; color: var(--grey); text-align: center; width: 100%; padding: 4px; }
+    /* ── SEARCH OVERLAY PLEIN ÉCRAN ── */
+    #search-overlay { position: fixed; inset: 0; background: var(--bg-black); z-index: 350; flex-direction: column; display: none; max-width: 430px; margin: 0 auto; }
+    .search-overlay-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #1f1f1f; background: var(--bg-black); flex-shrink: 0; }
+    .search-overlay-input { flex: 1; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 10px 14px; color: white; font-size: 16px; font-family: 'Barlow', sans-serif; outline: none; }
+    .search-overlay-input:focus { border-color: var(--red); }
+    .search-overlay-cancel { background: none; border: none; color: var(--grey); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; padding: 6px; }
+
+    /* Rangée de filtres avec flèches */
+    .sf-row { display: flex; align-items: center; gap: 4px; padding: 8px 6px; border-bottom: 1px solid #111; flex-shrink: 0; }
+    .sf-row-label { font-size: 10px; color: var(--grey); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; padding: 0 4px; flex-shrink: 0; }
+    .sf-nav { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 50%; min-width: 26px; width: 26px; height: 26px; color: var(--grey-light); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; padding: 0; }
+    .sf-nav:active { background: #2a2a2a; }
+    .sf-scroll { display: flex; gap: 6px; overflow-x: auto; flex: 1; scroll-behavior: smooth; padding: 2px 0; }
+    .sf-scroll::-webkit-scrollbar { display: none; }
+    .sf-btn { background: #1a1a1a; border: 1px solid #333; border-radius: 16px; padding: 5px 12px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; color: var(--grey-light); flex-shrink: 0; transition: all 0.15s; }
+    .sf-btn:active { opacity: 0.8; }
+    .sf-btn.active { background: var(--red); border-color: var(--red); color: white; }
+
+    #search-results { flex: 1; overflow-y: auto; }
+    #search-results::-webkit-scrollbar { display: none; }
+    #search-results { flex: 1; overflow-y: auto; }
+    #search-results::-webkit-scrollbar { display: none; }
+
+    /* ── POKER TABLE + CARDS ── */
+    #poker-game-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 250; align-items: center; justify-content: center; padding: 8px; overflow-y: auto; }
+    .pk-wrap { background: #0a0a14; border-radius: 16px; width: 100%; max-width: 420px; border: 1px solid #2a2a4e; overflow: hidden; display: flex; flex-direction: column; }
+    .pk-header { background: linear-gradient(135deg,#1a0a2e,#0d0d1f); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a4e; }
+    .pk-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; color: var(--white); }
+    .pk-close { background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+    .pk-felt { background: radial-gradient(ellipse at center,#1a4a2e 0%,#0d2a1a 100%); padding: 12px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #2a2a4e; }
+    .pk-bots-row { display: flex; gap: 8px; align-items: flex-start; }
+    .pk-player-box { background: rgba(0,0,0,0.4); border-radius: 10px; padding: 8px; flex: 1; border: 1px solid rgba(255,255,255,0.08); position: relative; }
+    .pk-player-box.folded { opacity: 0.45; }
+    .pk-player-box.eliminated { opacity: 0.3; filter: grayscale(1); }
+    .pk-pot-area { flex-shrink: 0; text-align: center; padding: 8px 6px; }
+    .pk-pot-label { font-size: 9px; color: var(--grey); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+    .pk-pot-amount { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; color: var(--yellow); }
+    .pk-bot-label { font-size: 11px; color: var(--grey-light); font-weight: 700; margin-bottom: 5px; }
+    .pk-badge-fold { background: var(--red); color: white; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+    .pk-hand { display: flex; gap: 4px; flex-wrap: wrap; }
+    .pk-chips-display { font-size: 11px; color: var(--yellow); font-weight: 700; margin-top: 4px; text-align: center; }
+    .pk-hand-label { font-size: 12px; color: #69f0ae; font-weight: 700; text-align: center; margin-top: 4px; background: rgba(0,200,83,0.1); border-radius: 6px; padding: 3px 8px; }
+    .pk-player-info { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; margin-top: 5px; }
+    .pk-community-row { display: flex; gap: 6px; justify-content: center; padding: 4px 0; }
+    .pk-card-empty { width: 40px; height: 56px; border: 2px dashed rgba(255,255,255,0.15); border-radius: 6px; }
+    .pk-player-self { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 10px 12px; border: 2px solid rgba(226,0,26,0.3); }
+    .pk-player-self.folded { opacity: 0.45; border-color: #333; }
+    .pk-player-self.eliminated { opacity: 0.3; filter: grayscale(1); border-color: #222; }
+    .pk-card { background: var(--white); border-radius: 6px; width: 40px; height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; color: #111; box-shadow: 0 2px 6px rgba(0,0,0,0.5); position: relative; flex-shrink: 0; }
+    .pk-card.red { color: var(--red); }
+    .pk-card.hidden { background: linear-gradient(135deg,#1a1a4e,#0d0d2e); color: #444; font-size: 22px; }
+    .pk-rank-top { font-size: 13px; line-height: 1; }
+    .pk-suit-mid { font-size: 16px; line-height: 1; }
+    .pk-log { background: #050508; padding: 8px 12px; max-height: 80px; overflow-y: auto; border-bottom: 1px solid #1a1a2e; }
+    .pk-log::-webkit-scrollbar { display: none; }
+    .pk-log-entry { font-size: 11px; color: var(--grey-light); padding: 1px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ AUTH OVERLAY ═══════════════════════ -->
+<div id="auth-overlay">
+
+  <!-- HOME -->
+  <div id="auth-home" class="auth-panel">
+    <div class="auth-logo">BET<span>A</span>MAX</div>
+    <p class="auth-tagline">Paris sportifs avec une âme.<br><strong>20% de vos pertes reversés à des associations.</strong></p>
+    <div class="solidarity-highlight">
+      <h3>🤝 Moteur Solidaire</h3>
+      <p>Chaque pari perdu contribue automatiquement à des associations caritatives. Pariez en conscience.</p>
+    </div>
+    <button class="auth-main-btn primary" onclick="showAuthPanel('register')">✨ Créer mon compte</button>
+    <button class="auth-main-btn secondary" onclick="showAuthPanel('login')">🔑 Se connecter</button>
+    <p style="font-size:11px;color:var(--grey);text-align:center;margin-top:16px;max-width:260px;line-height:1.5;">
+      Betamax fonctionne sans serveur — votre compte est stocké dans un fichier local sécurisé.<br>Accès réservé aux +18 ans. Jeu responsable.
+    </p>
+    <p class="auth-footer">Betamax © 2026 | <a href="#" onclick="showCredits();return false;">Crédit</a></p>
+  </div>
+
+  <!-- INSCRIPTION -->
+  <div id="auth-register" class="auth-panel" style="display:none;">
+    <div class="auth-logo">BET<span>A</span>MAX</div>
+    <p class="auth-tagline" style="margin-bottom:20px;">Créez votre compte en 30 secondes.</p>
+    <div class="passport-info">
+      <strong>📄 Comment ça marche ?</strong><br>
+      Après validation, un fichier <code>betamax_key.json</code> sera téléchargé. <strong>Conservez-le précieusement</strong> — c'est votre clé d'accès.
+    </div>
+    <div class="auth-form-group">
+      <label class="auth-form-label">Prénom</label>
+      <input id="reg-firstname" class="auth-form-input" type="text" placeholder="Ex : Thomas" autocomplete="given-name" />
+    </div>
+    <div class="auth-form-group">
+      <label class="auth-form-label">Nom</label>
+      <input id="reg-lastname" class="auth-form-input" type="text" placeholder="Ex : Dupont" autocomplete="family-name" />
+    </div>
+    <div class="auth-form-group">
+      <label class="auth-form-label">Date de naissance (+18 requis)</label>
+      <input id="reg-dob" class="auth-form-input" type="date" />
+    </div>
+    <div id="reg-error" class="auth-error"></div>
+    <button class="auth-main-btn primary" onclick="submitRegister()" style="margin-top:4px;">✅ Créer mon compte & télécharger ma clé</button>
+    <button class="auth-back" onclick="showAuthPanel('home')">← Retour</button>
+    <p class="auth-footer">Betamax © 2026 | <a href="#" onclick="showCredits();return false;">Crédit</a></p>
+  </div>
+
+  <!-- CONNEXION -->
+  <div id="auth-login" class="auth-panel" style="display:none;">
+    <div class="auth-logo">BET<span>A</span>MAX</div>
+    <p class="auth-tagline" style="margin-bottom:20px;">Chargez votre fichier-passeport pour accéder à votre compte.</p>
+    <div id="drop-zone" class="drop-zone" onclick="triggerFileInput()">
+      <div class="drop-zone-icon">📂</div>
+      <div class="drop-zone-title">Glisser votre betamax_key.json</div>
+      <div class="drop-zone-sub">ou cliquer pour sélectionner</div>
+    </div>
+    <div class="drop-zone-or">— ou —</div>
+    <button class="auth-main-btn secondary" onclick="triggerFileInput()">📁 Sélectionner le fichier</button>
+    <input type="file" id="passport-file-input" accept=".json" style="display:none;" onchange="onFileSelected(this)" />
+    <div id="login-error" class="auth-error"></div>
+    <div class="passport-info" style="margin-top:8px;">
+      <strong>Vous n'avez pas encore de fichier ?</strong><br>
+      Revenez en arrière et créez un compte pour recevoir votre <code>betamax_key.json</code>.
+    </div>
+    <button class="auth-back" onclick="showAuthPanel('home')">← Retour</button>
+    <p class="auth-footer">Betamax © 2026 | <a href="#" onclick="showCredits();return false;">Crédit</a></p>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════ DEPOSIT MODAL ═══════════════════════ -->
+<div id="deposit-modal">
+  <div class="deposit-box">
+    <div class="deposit-title">💳 Déposer des fonds</div>
+    <input type="number" class="deposit-input" id="deposit-input" placeholder="0.00" min="1" step="1" />
+    <div class="deposit-chips">
+      <button class="deposit-chip" onclick="setDepositAmount(10)">10€</button>
+      <button class="deposit-chip" onclick="setDepositAmount(20)">20€</button>
+      <button class="deposit-chip" onclick="setDepositAmount(50)">50€</button>
+      <button class="deposit-chip" onclick="setDepositAmount(100)">100€</button>
+    </div>
+    <div class="deposit-actions">
+      <button class="deposit-cancel" onclick="closeDeposit()">Annuler</button>
+      <button class="deposit-confirm" onclick="confirmDeposit()">Déposer →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ WITHDRAW MODAL ═══════════════════════ -->
+<div id="withdraw-modal">
+  <div class="deposit-box">
+    <div class="deposit-title">💸 Retrait</div>
+    <input type="number" class="deposit-input" id="withdraw-input" placeholder="Montant à retirer" min="1" step="1" />
+    <div class="deposit-actions">
+      <button class="deposit-cancel" onclick="closeWithdraw()">Annuler</button>
+      <button class="deposit-confirm" onclick="confirmWithdraw()">Retirer →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════ MAIN APP ═══════════════════════ -->
+<div id="app" style="display:none;">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo">BET<span>A</span>MAX</div>
+    <div class="header-right">
+      <div class="solidarity-badge">🤝 <span id="header-solidarity">0,00€</span></div>
+      <div class="balance-btn" onclick="showToast('Solde : ' + formatCurrency(state.balance))">
+        <span>💰</span><span id="balance-display">0,00€</span>
+      </div>
+      <button class="add-btn" onclick="showDeposit()">+</button>
+      <button class="save-btn" onclick="saveProgress()">💾 Sauver</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- SPORT -->
+    <div id="screen-sport" class="screen active">
+      <!-- Barre de recherche → ouvre overlay plein écran -->
+      <div class="search-bar" onclick="openSearchOverlay()" style="cursor:pointer;">
+        🔍 <span style="color:var(--grey);flex:1;">Rechercher un match, une équipe, une ligue...</span>
+        <span style="font-size:11px;color:var(--grey);background:#2a2a2a;padding:3px 8px;border-radius:6px;">Filtrer</span>
+      </div>
+
+      <!-- Navigation sport horizontal avec flèches -->
+      <div class="sport-cat-wrapper">
+        <button class="sport-cat-nav" onclick="scrollSportCats(-100)">‹</button>
+        <div id="sport-cat-bar">
+          <div class="sport-cat-chip active" data-cat="all"    onclick="setSportFilter('all')">🔥 Tout</div>
+          <div class="sport-cat-chip"        data-cat="foot"   onclick="setSportFilter('foot')">⚽ Foot</div>
+          <div class="sport-cat-chip"        data-cat="basket" onclick="setSportFilter('basket')">🏀 Basket</div>
+          <div class="sport-cat-chip"        data-cat="nfl"    onclick="setSportFilter('nfl')">🏈 NFL</div>
+          <div class="sport-cat-chip"        data-cat="tennis" onclick="setSportFilter('tennis')">🎾 Tennis</div>
+          <div class="sport-cat-chip"        data-cat="hockey" onclick="setSportFilter('hockey')">🏒 Hockey</div>
+        </div>
+        <button class="sport-cat-nav" onclick="scrollSportCats(100)">›</button>
+      </div>
+      <div class="solidarity-bar">
+        <div class="solidarity-title">🤝 Cagnotte Solidaire Totale</div>
+        <div class="solidarity-amount" id="solidarity-total">1 247,80€</div>
+        <div class="solidarity-sub">reversés aux associations • 20% de chaque pari perdu</div>
+        <div class="solidarity-progress"><div class="solidarity-fill" style="width:25%" id="solidarity-fill"></div></div>
+      </div>
+      <div class="section-title">🔴 En Direct</div>
+      <div id="live-matches-sport"></div>
+      <div class="section-title">📅 À Venir</div>
+      <div id="upcoming-matches"></div>
+    </div>
+
+    <!-- LIVE -->
+    <div id="screen-live" class="screen">
+      <div class="live-filter-wrapper">
+        <button class="live-nav-btn" onclick="scrollLiveFilter(-120)">‹</button>
+        <div class="live-filter-bar" id="live-filter-bar">
+          <div class="filter-chip active" onclick="setLiveFilter(this,'all')">HOT 🔥</div>
+          <div class="filter-chip" onclick="setLiveFilter(this,'foot')">⚽ Foot</div>
+          <div class="filter-chip" onclick="setLiveFilter(this,'basket')">🏀 Basket</div>
+          <div class="filter-chip" onclick="setLiveFilter(this,'nfl')">🏈 NFL</div>
+          <div class="filter-chip" onclick="setLiveFilter(this,'tennis')">🎾 Tennis</div>
+          <div class="filter-chip" onclick="setLiveFilter(this,'hockey')">🏒 Hockey</div>
+        </div>
+        <button class="live-nav-btn" onclick="scrollLiveFilter(120)">›</button>
+      </div>
+      <div id="live-matches-live"></div>
+    </div>
+
+    <!-- MES PARIS -->
+    <div id="screen-bets" class="screen">
+      <div class="bet-tabs">
+        <div class="bet-tab active" onclick="switchBetTab(this,'all')">Tous</div>
+        <div class="bet-tab" onclick="switchBetTab(this,'won')">Gagnés</div>
+        <div class="bet-tab" onclick="switchBetTab(this,'lost')">Perdus</div>
+        <div class="bet-tab" onclick="switchBetTab(this,'pending')">En cours</div>
+      </div>
+      <div id="bets-container"></div>
+    </div>
+
+    <!-- TICKETS -->
+    <div id="screen-tickets" class="screen">
+      <div id="tickets-screen" style="padding-bottom:20px;"></div>
+    </div>
+
+    <!-- POKER -->
+    <div id="screen-poker" class="screen">
+      <div class="poker-hero">
+        <div class="poker-title">POKER <span>EXPRESSO</span></div>
+        <div class="poker-subtitle">Sit&Go 3 joueurs · Roulette multiplicateur · Texas Hold'em</div>
+      </div>
+      <br>
+      <div class="section-title">🎰 EXPRESSO</div>
+      <div class="poker-table-card">
+        <div class="poker-table-header">
+          <div class="poker-table-name">☕ EXPRESSO</div>
+          <div class="poker-players">👥 3 joueurs · Roulette x2 à x1000</div>
+        </div>
+        <div class="poker-info-row">
+          <div class="poker-info-chip">🪙 Tapis: 500 jetons</div>
+          <div class="poker-info-chip">⏱ Blindes: 5/10</div>
+          <div class="poker-info-chip">🎰 Roulette incluse</div>
+        </div>
+        <div class="buy-in-chips">
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',1)">1€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',2)">2€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',5)">5€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',10)">10€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',25)">25€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',50)">50€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('expresso',100)">100€</button>
+          <button class="buy-in-btn free" onclick="joinPokerTable('expresso',0,true)">🎟 Ticket</button>
+        </div>
+      </div>
+      <div class="section-title">⚡ NITRO</div>
+      <div class="poker-table-card">
+        <div class="poker-table-header">
+          <div class="poker-table-name">⚡ NITRO</div>
+          <div class="poker-players">👥 3 joueurs · Roulette x2 à x1000</div>
+        </div>
+        <div class="poker-info-row">
+          <div class="poker-info-chip">🪙 Tapis: 300 jetons</div>
+          <div class="poker-info-chip">⏱ Blindes: 10/20</div>
+          <div class="poker-info-chip">🎰 Roulette incluse</div>
+        </div>
+        <div class="buy-in-chips">
+          <button class="buy-in-btn" onclick="joinPokerTable('nitro',5)">5€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('nitro',10)">10€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('nitro',25)">25€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('nitro',50)">50€</button>
+          <button class="buy-in-btn" onclick="joinPokerTable('nitro',100)">100€</button>
+          <button class="buy-in-btn free" onclick="joinPokerTable('nitro',0,true)">🎟 Ticket</button>
+        </div>
+      </div>
+      <div style="padding:16px 14px;font-size:12px;color:var(--grey);text-align:center;">
+        Jeu responsable. Les Tournois Expresso sont des jeux d'argent.<br>Le poker est interdit aux mineurs.
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <div id="screen-menu" class="screen">
+      <div class="menu-user">
+        <div class="menu-username" id="menu-username">Joueur Betamax</div>
+        <div class="menu-uid" id="menu-uid"></div>
+        <div style="font-size:12px;color:var(--grey);margin-top:4px;">Statut: <span style="color:#ffd600;font-weight:700;">VIP Bronze</span></div>
+        <div class="menu-balance-row">
+          <div class="menu-balance-box">
+            <div class="menu-balance-label">Solde</div>
+            <div class="menu-balance-val" id="menu-balance">0,00€</div>
+          </div>
+          <div class="menu-balance-box">
+            <div class="menu-balance-label">Freebets</div>
+            <div class="menu-balance-val" style="color:#ffd600;" id="menu-freebets">0,00€</div>
+          </div>
+          <div class="menu-balance-box">
+            <div class="menu-balance-label">Don Total</div>
+            <div class="menu-balance-val" style="color:var(--green);" id="menu-solidarity">0,00€</div>
+          </div>
+        </div>
+        <div class="menu-action-row">
+          <button class="menu-action-btn save" onclick="saveProgress()">💾 Sauvegarder</button>
+          <button class="menu-action-btn deposit" onclick="showDeposit()">+ Déposer</button>
+        </div>
+      </div>
+
+      <div class="menu-item" onclick="showWithdraw()">
+        <div class="menu-item-left"><span class="menu-item-icon">💸</span>Retrait</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showToast('Bientôt disponible')">
+        <div class="menu-item-left"><span class="menu-item-icon">🏆</span>Supercharged — Niveau 1/3</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="switchTab('tickets')">
+        <div class="menu-item-left"><span class="menu-item-icon">🎟</span>Mes Tickets (<span class="tickets-count">0</span>)</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showToast('Bientôt disponible')">
+        <div class="menu-item-left"><span class="menu-item-icon">🏪</span>Boutique Miles</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <hr class="divider">
+      <div class="menu-item" onclick="showToast('Parrainage : obtenez 20€ !')">
+        <div class="menu-item-left"><span class="menu-item-icon">👥</span>Parrainage : 20€ offerts</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <!-- Code bonus : format FREE suivi d'un nombre -->
+      <div class="menu-item">
+        <div class="menu-item-left"><span class="menu-item-icon">🎁</span>Code bonus</div>
+        <input id="bonus-code-input" placeholder="Code bonus..." style="background:#222;border:1px solid #333;border-radius:6px;padding:6px 10px;color:white;font-size:13px;flex:1;margin:0 10px;font-family:'Barlow',sans-serif;text-transform:uppercase;outline:none;" />
+        <button onclick="applyBonusCode()" style="background:var(--red);border:none;color:white;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;">OK</button>
+      </div>
+      <hr class="divider">
+      <div class="menu-item" onclick="showSolidarityInfo()">
+        <div class="menu-item-left"><span class="menu-item-icon">🤝</span>Moteur Solidaire</div>
+        <div style="background:var(--green);color:white;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;">ACTIF</div>
+      </div>
+      <div class="menu-item" onclick="saveProgress()">
+        <div class="menu-item-left"><span class="menu-item-icon">💾</span>Sauvegarder ma progression</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="showToast('Jeu responsable')">
+        <div class="menu-item-left"><span class="menu-item-icon">⚙️</span>Paramètres</div>
+        <span class="menu-item-arrow">›</span>
+      </div>
+      <div class="menu-item" onclick="logout()" style="color:var(--red);">
+        <div class="menu-item-left" style="color:var(--red);"><span class="menu-item-icon">🚪</span>Déconnexion</div>
+      </div>
+      <div style="height:8px;"></div>
+      <div style="text-align:center;padding:12px 16px 20px;font-size:11px;color:var(--grey);">
+        Betamax © 2026 | <a href="#" onclick="showCredits();return false;" style="color:var(--grey);text-decoration:underline;">Crédit</a>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('sport')" data-tab="sport">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      <span class="nav-label">Sport</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('live')" data-tab="live">
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/><path d="M6.343 6.343A8 8 0 0 0 4 12a8 8 0 0 0 2.343 5.657M17.657 6.343A8 8 0 0 1 20 12a8 8 0 0 1-2.343 5.657M3.515 3.515A12 12 0 0 0 0 12a12 12 0 0 0 3.515 8.485M20.485 3.515A12 12 0 0 1 24 12a12 12 0 0 1-3.515 8.485" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      <span class="nav-label">Live</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('bets')" data-tab="bets">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      <span class="nav-label">Mes Paris</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('poker')" data-tab="poker">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+      <span class="nav-label">Poker</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('menu')" data-tab="menu">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      <span class="nav-label">Menu</span>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- POKER GAME OVERLAY -->
+<div id="poker-game-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:250;align-items:center;justify-content:center;padding:8px;overflow-y:auto;"></div>
+
+<!-- BET BASKET -->
+<div id="bet-basket">
+  <div class="basket-header">
+    <span class="basket-title">🎯 MON PANIER (<span id="basket-count">0</span>)</span>
+    <button class="basket-close" onclick="closeBasket()">✕</button>
+  </div>
+  <div id="basket-items"></div>
+  <div class="basket-footer">
+    <div style="margin-bottom:8px;">
+      <button id="freebet-toggle-btn" onclick="toggleFreebet()" style="width:100%;background:transparent;border:1px solid #ffd600;border-radius:8px;padding:7px;color:#ffd600;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;">🎟 Utiliser un freebet</button>
+    </div>
+    <div class="stake-row">
+      <span class="stake-label">Mise (€)</span>
+      <input type="number" class="stake-input" id="stake-input" value="5" min="0.1" step="0.1" onchange="updateBasket()" oninput="updateBasket()" />
+    </div>
+    <div class="total-odds-row">
+      <span class="total-odds-label">Cote totale</span>
+      <span class="total-odds-value" id="total-odds">1.00</span>
+    </div>
+    <div class="potential-row">
+      <span class="potential-label">Gains potentiels</span>
+      <span class="potential-value" id="potential-gains">5,00€</span>
+    </div>
+    <div id="booster-preview" style="display:none;margin-bottom:10px;padding:10px;background:rgba(0,200,83,0.1);border-radius:8px;border:1px solid var(--green);">
+      <div style="font-size:12px;color:var(--green);font-weight:700;">⚡ COMBO BOOSTER ACTIF</div>
+      <div style="font-size:11px;color:#69f0ae;margin-top:2px;">3+ sélections = multiplicateur bonus aléatoire !</div>
+    </div>
+    <button class="place-bet-btn" onclick="placeBet()">VALIDER MON PARI →</button>
+  </div>
+</div>
+
+<!-- COMBO BOOSTER OVERLAY -->
+<div id="booster-overlay">
+  <div style="font-size:48px;margin-bottom:12px;">⚡</div>
+  <div class="booster-title">COMBO BOOSTER</div>
+  <div class="booster-subtitle">Votre multiplicateur se révèle...</div>
+  <div class="booster-grid" id="booster-grid"></div>
+  <div class="booster-result" id="booster-result">
+    <div class="booster-result-label">Multiplicateur obtenu :</div>
+    <div class="booster-result-val" id="booster-result-val">+0%</div>
+    <div class="booster-result-gains" id="booster-result-gains">Gains boostés : 0,00€</div>
+  </div>
+  <button class="booster-confirm-btn" id="booster-confirm" onclick="confirmBooster()">Confirmer →</button>
+</div>
+
+<!-- CREDITS OVERLAY -->
+<div id="credits-overlay" style="display:none;position:fixed;inset:0;background:var(--bg-black);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="max-width:340px;width:100%;text-align:center;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;margin-bottom:8px;">BET<span style="color:var(--red);">A</span>MAX</div>
+    <div style="font-size:13px;color:var(--grey-light);margin-bottom:32px;">Paris sportifs solidaires</div>
+    <div style="background:var(--bg-card);border-radius:16px;padding:28px 24px;border:1px solid #2a2a2a;">
+      <div style="font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:16px;">FONDATEURS</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--white);line-height:1.4;">
+        Valentin Bailleul<br><span style="color:var(--red);">&</span><br>Lucas Florent
+      </div>
+      <div style="margin-top:20px;font-size:12px;color:var(--grey);">Fondé en 2026 • Paris, France</div>
+    </div>
+    <button onclick="closeCredits()" style="margin-top:24px;background:var(--red);border:none;border-radius:12px;padding:14px 40px;color:white;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;cursor:pointer;">Fermer</button>
+  </div>
+</div>
+
+<!-- SEARCH OVERLAY PLEIN ÉCRAN -->
+<div id="search-overlay">
+
+  <!-- Barre de saisie -->
+  <div class="search-overlay-header">
+    <span style="font-size:18px;">🔍</span>
+    <input id="search-input-overlay" class="search-overlay-input" type="text" placeholder="Équipe, ligue, pays..."
+      oninput="renderSearchResults(this.value)"
+      onkeydown="if(event.key==='Enter')applyAndCloseSearch()" />
+    <button class="search-overlay-cancel" onclick="closeSearchOverlay()">Annuler</button>
+  </div>
+
+  <!-- Filtres SPORT avec flèches -->
+  <div class="sf-row">
+    <span class="sf-row-label">Sport</span>
+    <button class="sf-nav" onclick="scrollSfBar('sf-sport-bar',-120)">‹</button>
+    <div class="sf-scroll" id="sf-sport-bar">
+      <button class="sf-btn active" data-type="sport" data-val="all"    onclick="applySearchFilter('sport','all')">🔥 Tous</button>
+      <button class="sf-btn"        data-type="sport" data-val="foot"   onclick="applySearchFilter('sport','foot')">⚽ Foot</button>
+      <button class="sf-btn"        data-type="sport" data-val="basket" onclick="applySearchFilter('sport','basket')">🏀 Basket</button>
+      <button class="sf-btn"        data-type="sport" data-val="nfl"    onclick="applySearchFilter('sport','nfl')">🏈 NFL</button>
+      <button class="sf-btn"        data-type="sport" data-val="tennis" onclick="applySearchFilter('sport','tennis')">🎾 Tennis</button>
+      <button class="sf-btn"        data-type="sport" data-val="hockey" onclick="applySearchFilter('sport','hockey')">🏒 Hockey</button>
+    </div>
+    <button class="sf-nav" onclick="scrollSfBar('sf-sport-bar',120)">›</button>
+  </div>
+
+  <!-- Filtres PAYS avec flèches -->
+  <div class="sf-row" style="border-bottom:1px solid #111;">
+    <span class="sf-row-label">Pays</span>
+    <button class="sf-nav" onclick="scrollSfBar('sf-country-bar',-120)">‹</button>
+    <div class="sf-scroll" id="sf-country-bar">
+      <button class="sf-btn active" data-type="country" data-val="all"          onclick="applySearchFilter('country','all')">🌍 Tous</button>
+      <button class="sf-btn"        data-type="country" data-val="France"        onclick="applySearchFilter('country','France')">🇫🇷 France</button>
+      <button class="sf-btn"        data-type="country" data-val="Angleterre"    onclick="applySearchFilter('country','Angleterre')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Angleterre</button>
+      <button class="sf-btn"        data-type="country" data-val="Espagne"       onclick="applySearchFilter('country','Espagne')">🇪🇸 Espagne</button>
+      <button class="sf-btn"        data-type="country" data-val="Allemagne"     onclick="applySearchFilter('country','Allemagne')">🇩🇪 Allemagne</button>
+      <button class="sf-btn"        data-type="country" data-val="Italie"        onclick="applySearchFilter('country','Italie')">🇮🇹 Italie</button>
+      <button class="sf-btn"        data-type="country" data-val="USA"           onclick="applySearchFilter('country','USA')">🇺🇸 USA</button>
+      <button class="sf-btn"        data-type="country" data-val="Mexique"       onclick="applySearchFilter('country','Mexique')">🇲🇽 Mexique</button>
+      <button class="sf-btn"        data-type="country" data-val="Pays-Bas"      onclick="applySearchFilter('country','Pays-Bas')">🇳🇱 Pays-Bas</button>
+      <button class="sf-btn"        data-type="country" data-val="Portugal"      onclick="applySearchFilter('country','Portugal')">🇵🇹 Portugal</button>
+      <button class="sf-btn"        data-type="country" data-val="Australie"     onclick="applySearchFilter('country','Australie')">🇦🇺 Australie</button>
+      <button class="sf-btn"        data-type="country" data-val="UK"            onclick="applySearchFilter('country','UK')">🇬🇧 Angleterre (Tennis)</button>
+      <button class="sf-btn"        data-type="country" data-val="Europe"        onclick="applySearchFilter('country','Europe')">🇪🇺 Europe</button>
+    </div>
+    <button class="sf-nav" onclick="scrollSfBar('sf-country-bar',120)">›</button>
+  </div>
+
+  <div id="search-results"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
